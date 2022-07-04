@@ -1,5 +1,6 @@
 package com.example.phoneBook.controller;
 
+import com.example.phoneBook.Dto.factories.MemberDtoFactory;
 import com.example.phoneBook.entity.Member;
 import com.example.phoneBook.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -7,16 +8,26 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Controller
 @RequiredArgsConstructor
 public class MemberController {
 
     private final MemberService memberService;
 
+    private final MemberDtoFactory memberDtoFactory;
+
     @GetMapping("/members")
     public String listMembers(Model model) {
 
-        model.addAttribute("members", memberService.getAllMembers());
+        List<Member> members = memberService.getAllMembers();
+
+        model.addAttribute("members", members.stream()
+                .map(memberDtoFactory::makeMemberDto)
+                .collect(Collectors.toList()));
 
         return "members";
     }
@@ -36,7 +47,8 @@ public class MemberController {
 
     @GetMapping("/members/edit/{id}")
     public String editMemberForm(@PathVariable Long id, Model model) {
-        model.addAttribute("member", memberService.getMemberById(id));
+        Member member = memberService.getMemberById(id);
+        model.addAttribute("member", memberDtoFactory.makeMemberDto(member));
         return "edit_member";
     }
 
