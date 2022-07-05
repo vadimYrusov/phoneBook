@@ -6,9 +6,13 @@ import com.example.phoneBook.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 
-import java.util.Collections;
+import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,7 +44,10 @@ public class MemberController {
     }
 
     @PostMapping("/members")
-    public String saveMember(@ModelAttribute("member") Member member) {
+    public String saveMember(@Valid @ModelAttribute("member") Member member, BindingResult result) {
+        if (result.hasErrors()) {
+            return "create_member";
+        }
         memberService.saveMember(member);
         return "redirect:/members";
     }
@@ -54,9 +61,15 @@ public class MemberController {
 
     @PostMapping("/members/{id}")
     public String updateMember(@PathVariable Long id,
-                               @ModelAttribute("member") Member member,
+                               @Valid @ModelAttribute("member") Member member,
+                               BindingResult result,
                                Model model
     ) {
+
+        if (result.hasErrors()) {
+            return "edit_member";
+        }
+
         Member existingMember = memberService.getMemberById(id);
         existingMember.setId(id);
         existingMember.setName(member.getName());
